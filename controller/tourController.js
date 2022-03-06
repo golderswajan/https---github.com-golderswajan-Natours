@@ -9,13 +9,13 @@ exports.aliasTopTours = (req, res, next) => {
 
 class APIFeatures {
   constructor(query, queryString) {
-    this.qurery = query;
+    this.query = query;
     this.queryString = queryString;
   }
 
   filter() {
     //1A)filtering
-    const queryObj = { ...this.querySring };
+    const queryObj = { ...this.queryString };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
@@ -29,7 +29,7 @@ class APIFeatures {
     return this;
   }
 
-  sorting() {
+  sort() {
     if (this.queryString.sort) {
       const sortBy = this.queryString.sort.split(',').join(' ');
       this.query = this.query.sort(sortBy);
@@ -60,10 +60,14 @@ class APIFeatures {
 exports.getAllTours = async (req, res) => {
   try {
     //execute query
-    const features = new APIFeatures(Tour.find(), req.query).filter();
-    console.log(features.queryString);
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    //console.log(features.queryString);
     const tours = await features.query;
-    // const tours = await Tour.find();
+
     res.status(200).json({
       status: 'success',
       results: tours.length,
